@@ -51,7 +51,7 @@ module Test
             unless ctx.nil? or should.nil?
               if ctx != @ctx
                 nl
-                output("#{ctx}:")
+                output("\e[0;34m#{@suite.name}\e[0m\n\e[0;34;1m#{ctx}: \e[0m")
               end
               @ctx = ctx
               @current_test_text = " ==> #{should}"
@@ -68,7 +68,7 @@ module Test
 
           def test_finished(name)
             # can cause issues if there's no test text.
-            @current_test_text = ' ' if @current_test_text.empty? || @current_test_text.nil?
+            @current_test_text = ' ' if @current_test_text.nil? || @current_test_text.empty?
             if fault = @faults.find {|f| f.test_name == name}
               # Added ! to ERROR for length consistency
               fault_type = fault.is_a?(Test::Unit::Failure) ? "FAILED" : "ERROR!"
