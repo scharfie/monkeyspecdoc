@@ -13,9 +13,13 @@ module Test
   module Unit
 
     class Failure
+      def filename_and_line
+        location[0].sub(/\A(.+:\d+).*/, '\\1')
+      end
+
       def long_display
         location_display = if(location.size == 1)
-          location[0].sub(/\A(.+:\d+).*/, ' [\\1]')
+          " [#{filename_and_line}]"
         else
           "\n    [#{location.join("\n     ")}]"
         end
@@ -25,6 +29,10 @@ module Test
     end
 
     class Error
+      def filename_and_line
+        @exception.backtrace.first.sub(/\A(.+:\d+).*/, '\\1')
+      end
+
       def long_display
         backtrace = filter_backtrace(@exception.backtrace).join("\n    ")
         name=(split=split_shoulda_names(@test_name))?split.join(" "):@test_name
@@ -65,7 +73,7 @@ module Test
               # Added ! to ERROR for length consistency
               fault_type = fault.is_a?(Test::Unit::Failure) ? "FAILED" : "ERROR!"
               # NOTE -- Concatenation because "\e[0m]" does funky stuff.
-              output("[\e[0;31m#{fault_type}\e[0m" + "]#{@current_test_text} (#{@faults.length})")
+              output("[\e[0;31m#{fault_type}\e[0m" + "]#{@current_test_text} (#{@faults.length}) \e[0;31m#{@faults.last.filename_and_line}\e[0m" + '')
             else
               # Added spaces on either side of OK for length consistency
               output("[  \e[0;32mOK\e[0m  ]#{@current_test_text}")
