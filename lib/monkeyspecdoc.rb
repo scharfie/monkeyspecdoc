@@ -14,7 +14,7 @@ module Test
 
     class Failure
       def filename_and_line
-        location[0].sub(/\A(.+:\d+).*/, '\\1')
+        location[0].to_s.sub(/\A(.+:\d+).*/, '\\1')
       end
 
       def long_display
@@ -30,7 +30,7 @@ module Test
 
     class Error
       def filename_and_line
-        @exception.backtrace.first.sub(/\A(.+:\d+).*/, '\\1')
+        @exception.backtrace.first.to_s.sub(/\A(.+:\d+).*/, '\\1')
       end
 
       def long_display
