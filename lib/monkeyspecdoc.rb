@@ -45,14 +45,25 @@ module Test
         class TestRunner
 
           alias_method :test_started_old, :test_started
+          
+          def colors_enabled?
+            return @colors_enabled unless @colors_enabled.nil?
+            @colors_enabled = ENV['COLORS'].to_s.downcase != 'false'
+          end
+          
+          def string_with_color(msg, color_sequence=nil)
+            msg = "\e[#{color_sequence}m#{msg}\e[0m" if color_sequence && colors_enabled?
+            msg
+          end
 
           def test_started(name)
             ctx, should = split_shoulda_names(name)
             unless ctx.nil? or should.nil?
               if ctx != @ctx
                 nl
-                output("\e[0;34m#{@suite.name}\e[0m\n\e[0;34;1m#{ctx}: \e[0m")
+                output(string_with_color(@suite.name, '0;34') + "\n" + string_with_color("#{ctx}: ", "0;34;1"))
               end
+
               @ctx = ctx
               @current_test_text = " ==> #{should}"
               #output_single("- #{should}: ")
@@ -72,11 +83,15 @@ module Test
             if fault = @faults.find {|f| f.test_name == name}
               # Added ! to ERROR for length consistency
               fault_type = fault.is_a?(Test::Unit::Failure) ? "FAILED" : "ERROR!"
-              # NOTE -- Concatenation because "\e[0m]" does funky stuff.
-              output("[\e[0;31m#{fault_type}\e[0m" + "]#{@current_test_text} (#{@faults.length}) \e[0;31m#{@faults.last.filename_and_line}\e[0m" + '')
+
+              output(
+                "[" + string_with_color(fault_type, '0;31') + "]" +
+                "#{@current_test_text} (#{@faults.length}) " +
+                string_with_color(@faults.last.filename_and_line, "0;31")
+              )
             else
               # Added spaces on either side of OK for length consistency
-              output("[  \e[0;32mOK\e[0m  ]#{@current_test_text}")
+              output("[  " + string_with_color("OK", '0;32') + "  ]#{@current_test_text}")
             end
             @already_outputted = false
           end

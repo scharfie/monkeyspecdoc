@@ -2,7 +2,7 @@ Gem::Specification.new do |s|
   s.name = %q{monkeyspecdoc}
   s.version = "0.9.5"
 
-  s.authors = ["Janico Greifenberg"]
+  s.authors = ["Janico Greifenberg", "Chris Scharf"]
   s.date = %q{2008-12-18}
   s.default_executable = %q{mkspecdoc}
   s.description = %q{Specdoc output for Ruby's Test::Unit and Shoulda}
