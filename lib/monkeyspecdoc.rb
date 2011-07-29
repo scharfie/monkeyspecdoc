@@ -62,11 +62,27 @@ module Test
           end
 
           def test_started(name)
+            # we can't display anything yet if hide passing tests is enabled
+            return nil if hide_passing?
+            output_test_information(name)
+          end
+
+          def add_fault(fault)
+            @faults << fault
+            @already_outputted = true
+          end
+          
+          def output_test_information(name, passing=true)
+            return if passing and hide_passing?
+
             ctx, should = split_shoulda_names(name)
             unless ctx.nil? or should.nil?
               if ctx != @ctx
                 nl
-                output(string_with_color(@suite.name, '0;34') + "\n" + string_with_color("#{ctx}: ", "0;34;1"))
+                output(
+                  #string_with_color(@suite.name, '0;34') + "\n" + 
+                  string_with_color("#{ctx}: ", "0;34;1")
+                )
               end
 
               @ctx = ctx
@@ -74,18 +90,15 @@ module Test
               #output_single("- #{should}: ")
             else
               test_started_old(name)
-            end
-          end
-
-          def add_fault(fault)
-            @faults << fault
-            @already_outputted = true
+            end            
           end
 
           def test_finished(name)
             # can cause issues if there's no test text.
             @current_test_text = ' ' if @current_test_text.nil? || @current_test_text.empty?
             if fault = @faults.find {|f| f.test_name == name}
+              output_test_information(name, false) if hide_passing?
+                
               # Added ! to ERROR for length consistency
               fault_type = fault.is_a?(Test::Unit::Failure) ? "FAILED" : "ERROR!"
 
@@ -95,6 +108,8 @@ module Test
                 string_with_color(@faults.last.filename_and_line, "0;31")
               )
             else
+              output_test_information(name, true) unless hide_passing?
+              
               # Added spaces on either side of OK for length consistency
               output("[  " + string_with_color("OK", '0;32') + "  ]#{@current_test_text}") unless hide_passing?
             end
