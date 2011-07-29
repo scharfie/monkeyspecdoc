@@ -51,6 +51,11 @@ module Test
             @colors_enabled = ENV['COLORS'].to_s.downcase != 'false'
           end
           
+          def hide_passing?
+            return @hide_passing unless @hide_passing.nil?
+            @hide_passing = ENV['HIDE_PASSING']
+          end
+          
           def string_with_color(msg, color_sequence=nil)
             msg = "\e[#{color_sequence}m#{msg}\e[0m" if color_sequence && colors_enabled?
             msg
@@ -91,8 +96,9 @@ module Test
               )
             else
               # Added spaces on either side of OK for length consistency
-              output("[  " + string_with_color("OK", '0;32') + "  ]#{@current_test_text}")
+              output("[  " + string_with_color("OK", '0;32') + "  ]#{@current_test_text}") unless hide_passing?
             end
+            
             @already_outputted = false
           end
 
